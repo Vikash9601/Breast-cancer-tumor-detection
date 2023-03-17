@@ -1,0 +1,42 @@
+
+img=cv.imread("/home/boss/Documents/Dataset_BUSI_with_GT/malignant/malignant (1).png")
+imgmask=cv.imread("/home/boss/Documents/Dataset_BUSI_with_GT/malignant/malignant (1)_mask.png")
+import numpy as np
+import cv2 as cv
+from scipy.signal import wiener
+from fcmeans import FCM as f
+
+smoothimg=wiener(img,mysize=7)
+nimg=np.array(smoothimg,dtype=np.uint8)
+
+cimg=cv.cvtColor(nimg,cv.COLOR_RGB2HSV)
+h,s,v=cv.split(cimg)
+clahe=cv.createCLAHE(clipLimit=5)
+final=clahe.apply(v)
+
+
+merged_hsv=cv.merge((h,s,v))
+normal_hist=cv.cvtColor(merged_hsv,cv.COLOR_HSV2BGR)
+
+Z = normal_hist.reshape((-1,3))
+
+
+my_model = f(n_clusters=2) 
+
+Z = np.float32(Z)
+my_model.fit(Z)
+center = my_model.centers
+label = my_model.predict(Z)
+center = np.uint8(center)
+Fres = center[label.flatten()]
+Fres2 = Fres.reshape((img.shape))
+
+# print(centers)
+# print(labels)
+# labels=labels*255
+# print(labels)
+# labels.reshape((img.shape[0],img.shape[1]))
+cv.imshow("fuzzy",Fres2)
+cv.imshow("kmeans",res2)
+cv.waitKey(0)
+cv.destroyAllWindows()
