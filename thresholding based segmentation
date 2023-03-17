@@ -1,0 +1,37 @@
+import cv2 as cv
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.image as pimg
+import os
+from scipy.signal import wiener
+from scipy.misc import face
+os.getcwd()
+
+
+img=cv.imread(image path,1)
+simg=cv.GaussianBlur(img,(5,5),0)
+
+smoothimg=wiener(img,mysize=5)
+nimg=np.array(smoothimg,dtype=np.uint8)
+img1=cv.cvtColor(nimg,cv.COLOR_RGB2GRAY)
+
+newkernel=np.ones((5,5),dtype=np.uint8)
+newkernel1=np.ones((5,5),dtype=np.uint8)
+thresval,threshimg=cv.threshold(img1,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
+
+newimg=cv.morphologyEx(threshimg,cv.MORPH_OPEN,newkernel)
+# newimg=cv.erode(newimg,newkernel1,iterations=1)
+contour,hierarcy=cv.findContours(threshimg,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_NONE)
+list_contours=sorted(contour,key=cv.contourArea,reverse=True)
+mask_img=np.zeros(newimg.shape,np.uint8)
+
+x=cv.drawContours(mask_img, list_contours, 0, (255,255,255), 3)
+
+
+cv.imshow("org",img)
+cv.imshow("img",img1)
+cv.imshow("sorg",threshimg)
+cv.imshow("cotour",mask_img)
+#cv.imshow("dfsd",kernel)
+cv.waitKey(0)
+cv.destroyAllWindows()
